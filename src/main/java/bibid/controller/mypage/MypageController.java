@@ -75,7 +75,7 @@ public class MypageController {
     }
 
     @GetMapping("/userInfo/{memberIndex}")
-    public ResponseEntity<?> getMemberByMemberIndex(@PathVariable Long memberIndex) {
+    public ResponseEntity<?> getMemberByMemberIndex(@PathVariable("memberIndex") Long memberIndex) {
         ResponseDto<MemberDto> responseDto = new ResponseDto<>();
 
         try {

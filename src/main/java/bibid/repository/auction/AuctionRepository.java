@@ -14,30 +14,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AuctionRepository extends JpaRepository<Auction, Long>, AuctionRepositoryCustom {
-//    @Query("SELECT a FROM Auction a WHERE a.category = :category AND a.auctionType = '일반 경매' ORDER BY a.regdate DESC")
-//    Page<Auction> findByCategory(@Param("category") String category, Pageable sortedByViewCount);
-//
-//    @Query("SELECT a FROM Auction a WHERE a.auctionType = '일반 경매'")
-//    Page<Auction> findAllGeneralAuction(Pageable pageable);
-//
-//    @Query("SELECT a FROM Auction a WHERE a.category = :category AND a.auctionType = '일반 경매' ORDER BY a.regdate DESC")
-//    Page<Auction> findByCategory2(@Param("category") String category, Pageable pageable);
-//
-//    @Query("SELECT a FROM Auction a WHERE a.endingLocalDateTime > :currentTime AND a.auctionType= '일반 경매'")
-//    Page<Auction> findConveyor(@Param("currentTime") LocalDateTime currentTime, Pageable sortedByEndingLocalDateTime);
-//
-//    @Query("SELECT a FROM Auction a WHERE " +
-//            "(:searchCondition = 'all' AND (a.productName LIKE %:searchKeyword% OR " +
-//            "a.category LIKE %:searchKeyword% OR " +
-//            "a.productDescription LIKE %:searchKeyword%)) OR " +
-//            "(:searchCondition = 'productName' AND a.productName LIKE %:searchKeyword%) OR " +
-//            "(:searchCondition = 'category' AND a.category LIKE %:searchKeyword%) OR " +
-//            "(:searchCondition = 'productDescription' AND a.productDescription LIKE %:searchKeyword%) " +
-//            "AND a.auctionType = '일반 경매' " +
-//            "ORDER BY a.regdate DESC")
-//    Page<Auction> searchAll(@Param("searchCondition") String searchCondition,
-//                            @Param("searchKeyword") String searchKeyword,
-//                            Pageable pageable);
 
     long countByMember_MemberIndex(Long memberIndex);
 
@@ -58,7 +34,7 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, Auction
     @Modifying
     @Transactional
     @Query("UPDATE Auction a SET a.viewCnt = a.viewCnt + 1 WHERE a.auctionIndex = :auctionIndex")
-    void updateAuctionViewCnt(Long auctionIndex);
+    void updateAuctionViewCnt(@Param("auctionIndex") Long auctionIndex);
 
     @Query("SELECT a FROM Auction a " +
             "LEFT JOIN FETCH a.auctionInfoList " +
