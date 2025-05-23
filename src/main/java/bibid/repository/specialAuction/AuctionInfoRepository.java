@@ -3,7 +3,8 @@ package bibid.repository.specialAuction;
 import bibid.entity.Auction;
 import bibid.entity.AuctionInfo;
 import bibid.entity.Member;
-import io.lettuce.core.dynamic.annotation.Param;
+//import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
