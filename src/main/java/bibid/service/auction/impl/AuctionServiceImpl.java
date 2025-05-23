@@ -10,8 +10,6 @@ import bibid.entity.ChatRoom;
 import bibid.entity.Member;
 import bibid.repository.auction.AuctionDetailRepository;
 import bibid.repository.auction.AuctionRepository;
-import bibid.service.livestation.LiveStationPoolManager;
-import bibid.service.livestation.LiveStationService;
 import bibid.service.specialAuction.impl.SpecialAuctionScheduler;
 import bibid.service.auction.AuctionService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +41,7 @@ public class AuctionServiceImpl implements AuctionService {
                                  MultipartFile[] additionalImages,
                                  Member member,
                                  Pageable pageable) {
+
         auctionDto.setRegdate(LocalDateTime.now());
         auctionDto.setModdate(LocalDateTime.now());
         auctionDto.setAuctionStatus("대기중");
@@ -51,7 +50,7 @@ public class AuctionServiceImpl implements AuctionService {
         AuctionDetail auctionDetail = auctionDetailDto.toEntity(auction);
         auction.setAuctionDetail(auctionDetail);
 
-        if(auctionDto.getAuctionType().equals("실시간 경매")){
+        if (auctionDto.getAuctionType().equals("실시간 경매")) {
             ChatRoom chatRoom = ChatRoom.builder()
                     .roomName("경매 " + auctionDto.getProductName() + " 채팅방")
                     .createdAt(LocalDateTime.now())
@@ -60,22 +59,21 @@ public class AuctionServiceImpl implements AuctionService {
             auction.setChatRoom(chatRoom);
         }
 
+        // 썸네일 등록
         if (thumbnail != null) {
-
             AuctionImageDto auctionImageDto = fileUtils.auctionImageParserFileInfo(thumbnail, "auction/thumbnail");
             auctionImageDto.setThumbnail(true);
-
             auction.getAuctionImageList().add(auctionImageDto.toEntity(auction));
         }
 
+        // 추가 이미지 등록
         if (additionalImages != null) {
             Arrays.stream(additionalImages).forEach(additionalImage -> {
-                if(additionalImage.getOriginalFilename() != null &&
+                if (additionalImage.getOriginalFilename() != null &&
                         !additionalImage.getOriginalFilename().equalsIgnoreCase("")) {
 
                     AuctionImageDto auctionImageDto = fileUtils.auctionImageParserFileInfo(additionalImage, "auction/additionalImages");
                     auctionImageDto.setThumbnail(false);
-
                     auction.getAuctionImageList().add(auctionImageDto.toEntity(auction));
                 }
             });
@@ -83,14 +81,14 @@ public class AuctionServiceImpl implements AuctionService {
 
         Auction savedAuction = auctionRepository.save(auction);
 
-//        if(auctionDto.getAuctionType().equals("실시간 경매")){
-//            specialAuctionScheduler.scheduleChannelAllocation(savedAuction.getAuctionIndex(), auctionDto.getStartingLocalDateTime());
-//            specialAuctionScheduler.scheduleChannelRelease(savedAuction.getAuctionIndex(), auctionDto.getStartingLocalDateTime());
-//            specialAuctionScheduler.scheduleAuctionEnd(savedAuction.getAuctionIndex(), auctionDto.getEndingLocalDateTime());
-//        }
+        // ✅ 스케줄링은 경매 종료만 예약
+        if (auctionDto.getAuctionType().equals("실시간 경매")) {
+            specialAuctionScheduler.scheduleAuctionEnd(savedAuction.getAuctionIndex(), auctionDto.getEndingLocalDateTime());
+        }
 
         return auctionRepository.findAll(pageable).map(Auction::toDto);
     }
+
 
     @Override
     public Page<AuctionDto> findAll(Pageable pageable) {

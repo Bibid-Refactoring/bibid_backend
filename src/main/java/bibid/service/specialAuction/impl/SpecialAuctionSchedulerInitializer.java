@@ -1,21 +1,8 @@
 package bibid.service.specialAuction.impl;
 
-import bibid.entity.Auction;
-import bibid.entity.LiveStationChannel;
-import bibid.entity.Notification;
-import bibid.entity.NotificationType;
-import bibid.repository.notification.NotificationRepository;
-import bibid.repository.specialAuction.SpecialAuctionRepository;
-import bibid.service.livestation.LiveStationPoolManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

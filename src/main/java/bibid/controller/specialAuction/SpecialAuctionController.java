@@ -8,7 +8,6 @@ import bibid.entity.CustomUserDetails;
 import bibid.entity.LiveStationChannel;
 import bibid.entity.Member;
 import bibid.repository.livestation.LiveStationChannelRepository;
-import bibid.service.livestation.LiveStationPoolManager;
 import bibid.repository.specialAuction.SpecialAuctionRepository;
 import bibid.service.specialAuction.SpecialAuctionService;
 import bibid.service.specialAuction.impl.SpecialAuctionScheduler;
@@ -32,7 +31,6 @@ public class SpecialAuctionController {
     private final SpecialAuctionService specialAuctionService;
     private final SpecialAuctionRepository specialAuctionRepository;
     private final LiveStationChannelRepository channelRepository;
-    private final LiveStationPoolManager liveStationPoolManager;
     private final SpecialAuctionScheduler specialAuctionScheduler;
 
     @GetMapping("/list")
@@ -123,35 +121,35 @@ public class SpecialAuctionController {
     }
 
 
-//    @PostMapping("/registerAlarm/{auctionIndex}")
-//    public ResponseEntity<ResponseDto<String>> registerAuctionAlarm(
-//            @PathVariable Long auctionIndex,
-//            @AuthenticationPrincipal CustomUserDetails userDetails) {
-//
-//        ResponseDto<String> responseDto = new ResponseDto<>();
-//        Member member = userDetails.getMember();
-//        Auction auction = specialAuctionRepository.findById(auctionIndex).orElseThrow(
-//                () -> new RuntimeException("해당 옥션은 없습니다.")
-//        );
-//
-//        if (auction == null) {
-//            responseDto.setStatusCode(HttpStatus.NOT_FOUND.value());
-//            responseDto.setStatusMessage("경매를 찾을 수 없습니다.");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDto);
-//        }
-//
-//        boolean isRegistered = specialAuctionScheduler.registerAlarmForUser(auction, member.getMemberIndex());
-//
-//        if (isRegistered) {
-//            responseDto.setStatusCode(HttpStatus.OK.value());
-//            responseDto.setStatusMessage("알림 신청이 완료되었습니다.");
-//            responseDto.setItem("알림 신청 성공");
-//            return ResponseEntity.ok(responseDto);
-//        } else {
-//            responseDto.setStatusCode(HttpStatus.CONFLICT.value());
-//            responseDto.setStatusMessage("이미 알림이 등록되어 있습니다.");
-//            responseDto.setItem("알림 등록 중복");
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
-//        }
-//    }
+    @PostMapping("/registerAlarm/{auctionIndex}")
+    public ResponseEntity<ResponseDto<String>> registerAuctionAlarm(
+            @PathVariable Long auctionIndex,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        ResponseDto<String> responseDto = new ResponseDto<>();
+        Member member = userDetails.getMember();
+        Auction auction = specialAuctionRepository.findById(auctionIndex).orElseThrow(
+                () -> new RuntimeException("해당 옥션은 없습니다.")
+        );
+
+        if (auction == null) {
+            responseDto.setStatusCode(HttpStatus.NOT_FOUND.value());
+            responseDto.setStatusMessage("경매를 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDto);
+        }
+
+        boolean isRegistered = specialAuctionScheduler.registerAlarmForUser(auction, member.getMemberIndex());
+
+        if (isRegistered) {
+            responseDto.setStatusCode(HttpStatus.OK.value());
+            responseDto.setStatusMessage("알림 신청이 완료되었습니다.");
+            responseDto.setItem("알림 신청 성공");
+            return ResponseEntity.ok(responseDto);
+        } else {
+            responseDto.setStatusCode(HttpStatus.CONFLICT.value());
+            responseDto.setStatusMessage("이미 알림이 등록되어 있습니다.");
+            responseDto.setItem("알림 등록 중복");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
+        }
+    }
 }
