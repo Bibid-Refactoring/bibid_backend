@@ -27,6 +27,9 @@ public class LiveStationChannelDTO {
     // 현재 채널이 사용 중인지 여부
     private boolean isAllocated;
 
+    // YouTube 방송 ID (transition API 호출 시 사용됨)
+    private String youtubeBroadcastId;
+
     public LiveStationChannel toEntity() {
         return LiveStationChannel.builder()
                 .liveStationChannelIndex(this.liveStationChannelIndex)
