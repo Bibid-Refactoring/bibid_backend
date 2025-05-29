@@ -25,6 +25,8 @@ public class QLiveStationChannel extends EntityPathBase<LiveStationChannel> {
 
     public final NumberPath<Long> liveStationChannelIndex = createNumber("liveStationChannelIndex", Long.class);
 
+    public final StringPath youtubeBroadcastId = createString("youtubeBroadcastId");
+
     public final StringPath youtubeStreamKey = createString("youtubeStreamKey");
 
     public final StringPath youtubeStreamUrl = createString("youtubeStreamUrl");

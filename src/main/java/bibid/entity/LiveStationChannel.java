@@ -57,6 +57,14 @@ public class LiveStationChannel {
     private boolean isAvailable;
 
     /**
+     * YouTube 방송 ID
+     * 예: abcd1234efgh5678 (transition API 호출 시 사용됨)
+     */
+    @Column
+    private String youtubeBroadcastId;
+
+
+    /**
      * DTO 변환 메서드
      */
     public LiveStationChannelDTO toDto(){
@@ -67,6 +75,7 @@ public class LiveStationChannel {
                 .youtubeWatchUrl(this.youtubeWatchUrl)
                 .isAllocated(this.isAllocated)
                 .isAvailable(this.isAvailable)
+                .youtubeBroadcastId(this.youtubeBroadcastId)
                 .build();
     }
 }

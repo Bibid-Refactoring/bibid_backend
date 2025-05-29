@@ -8,10 +8,12 @@ import bibid.entity.CustomUserDetails;
 import bibid.entity.LiveStationChannel;
 import bibid.entity.Member;
 import bibid.repository.livestation.LiveStationChannelRepository;
-import bibid.service.livestation.LiveStationPoolManager;
 import bibid.repository.specialAuction.SpecialAuctionRepository;
 import bibid.service.specialAuction.SpecialAuctionService;
+import bibid.service.specialAuction.impl.GoogleTokenProvider;
+import bibid.service.specialAuction.impl.GoogleYoutubeService;
 import bibid.service.specialAuction.impl.SpecialAuctionScheduler;
+import com.google.api.services.youtube.model.LiveBroadcast;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -32,8 +34,11 @@ public class SpecialAuctionController {
     private final SpecialAuctionService specialAuctionService;
     private final SpecialAuctionRepository specialAuctionRepository;
     private final LiveStationChannelRepository channelRepository;
-    private final LiveStationPoolManager liveStationPoolManager;
     private final SpecialAuctionScheduler specialAuctionScheduler;
+
+    // ✅ 추가된 Google 연동 컴포넌트들
+    private final GoogleYoutubeService googleYoutubeService;
+    private final GoogleTokenProvider tokenProvider;
 
     @GetMapping("/list")
     public ResponseEntity<?> getAuctionsByType(
@@ -66,40 +71,52 @@ public class SpecialAuctionController {
         }
     }
 
-    // 라이브 종료 요청
+    // ✅ 라이브 방송 종료
     @PostMapping("/endLive/{auctionIndex}")
     public ResponseEntity<?> endLive(@PathVariable Long auctionIndex) {
         Auction auction = specialAuctionRepository.findById(auctionIndex)
                 .orElseThrow(() -> new RuntimeException("해당 옥션은 없습니다."));
 
-        // 상태 초기화
-        auction.setAuctionStatus("종료됨"); // 또는 필요 시 "대기중", "종료" 등으로 구분
-        specialAuctionRepository.save(auction);
+        LiveStationChannel channel = auction.getLiveStationChannel();
+        if (channel == null || channel.getYoutubeBroadcastId() == null) {
+            return ResponseEntity.badRequest().body("YouTube 방송 정보가 없습니다.");
+        }
 
-        log.info("라이브 방송 종료됨 - auctionIndex={}", auctionIndex);
+        try {
+            String accessToken = tokenProvider.getAccessToken();
+            googleYoutubeService.transitionBroadcastToComplete(channel.getYoutubeBroadcastId(), accessToken);
 
-        return ResponseEntity.ok("YouTube 라이브 방송이 종료되었습니다.");
+            auction.setAuctionStatus("종료됨");
+            specialAuctionRepository.save(auction);
+
+            return ResponseEntity.ok("YouTube 라이브 방송이 종료되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("방송 종료 실패: " + e.getMessage());
+        }
     }
 
-
-    // 라이브 시작
+    // ✅ 라이브 방송 시작
     @PostMapping("/startLive/{auctionIndex}")
     public ResponseEntity<?> startLive(@PathVariable Long auctionIndex) {
         Auction auction = specialAuctionRepository.findById(auctionIndex)
                 .orElseThrow(() -> new RuntimeException("해당 옥션은 없습니다."));
 
         LiveStationChannel channel = auction.getLiveStationChannel();
-        if (channel == null) {
-            return ResponseEntity.badRequest().body("연결된 YouTube 채널이 없습니다.");
+        if (channel == null || channel.getYoutubeBroadcastId() == null) {
+            return ResponseEntity.badRequest().body("YouTube 방송 정보가 없습니다.");
         }
 
-        // 상태 변경
-        auction.setAuctionStatus("방송중");
-        specialAuctionRepository.save(auction);
+        try {
+            String accessToken = tokenProvider.getAccessToken();
+            googleYoutubeService.transitionBroadcastToLive(channel.getYoutubeBroadcastId(), accessToken);
 
-        log.info("라이브 방송 시작됨 - auctionIndex={}, streamKey={}", auctionIndex, channel.getYoutubeStreamKey());
+            auction.setAuctionStatus("방송중");
+            specialAuctionRepository.save(auction);
 
-        return ResponseEntity.ok("YouTube 라이브 방송이 시작되었습니다.");
+            return ResponseEntity.ok("YouTube 라이브 방송이 시작되었습니다.");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("방송 시작 실패: " + e.getMessage());
+        }
     }
 
     // 채널 정보 요청
@@ -123,35 +140,65 @@ public class SpecialAuctionController {
     }
 
 
-//    @PostMapping("/registerAlarm/{auctionIndex}")
-//    public ResponseEntity<ResponseDto<String>> registerAuctionAlarm(
-//            @PathVariable Long auctionIndex,
-//            @AuthenticationPrincipal CustomUserDetails userDetails) {
-//
-//        ResponseDto<String> responseDto = new ResponseDto<>();
-//        Member member = userDetails.getMember();
-//        Auction auction = specialAuctionRepository.findById(auctionIndex).orElseThrow(
-//                () -> new RuntimeException("해당 옥션은 없습니다.")
-//        );
-//
-//        if (auction == null) {
-//            responseDto.setStatusCode(HttpStatus.NOT_FOUND.value());
-//            responseDto.setStatusMessage("경매를 찾을 수 없습니다.");
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDto);
-//        }
-//
-//        boolean isRegistered = specialAuctionScheduler.registerAlarmForUser(auction, member.getMemberIndex());
-//
-//        if (isRegistered) {
-//            responseDto.setStatusCode(HttpStatus.OK.value());
-//            responseDto.setStatusMessage("알림 신청이 완료되었습니다.");
-//            responseDto.setItem("알림 신청 성공");
-//            return ResponseEntity.ok(responseDto);
-//        } else {
-//            responseDto.setStatusCode(HttpStatus.CONFLICT.value());
-//            responseDto.setStatusMessage("이미 알림이 등록되어 있습니다.");
-//            responseDto.setItem("알림 등록 중복");
-//            return ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
-//        }
-//    }
+    @PostMapping("/registerAlarm/{auctionIndex}")
+    public ResponseEntity<ResponseDto<String>> registerAuctionAlarm(
+            @PathVariable Long auctionIndex,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        ResponseDto<String> responseDto = new ResponseDto<>();
+        Member member = userDetails.getMember();
+        Auction auction = specialAuctionRepository.findById(auctionIndex).orElseThrow(
+                () -> new RuntimeException("해당 옥션은 없습니다.")
+        );
+
+        if (auction == null) {
+            responseDto.setStatusCode(HttpStatus.NOT_FOUND.value());
+            responseDto.setStatusMessage("경매를 찾을 수 없습니다.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseDto);
+        }
+
+        boolean isRegistered = specialAuctionScheduler.registerAlarmForUser(auction, member.getMemberIndex());
+
+        if (isRegistered) {
+            responseDto.setStatusCode(HttpStatus.OK.value());
+            responseDto.setStatusMessage("알림 신청이 완료되었습니다.");
+            responseDto.setItem("알림 신청 성공");
+            return ResponseEntity.ok(responseDto);
+        } else {
+            responseDto.setStatusCode(HttpStatus.CONFLICT.value());
+            responseDto.setStatusMessage("이미 알림이 등록되어 있습니다.");
+            responseDto.setItem("알림 등록 중복");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
+        }
+    }
+
+    // ✅ 라이브 방송 생성
+    @PostMapping("/createLive/{auctionIndex}")
+    public ResponseEntity<?> createLive(@PathVariable Long auctionIndex) {
+        try {
+            Auction auction = specialAuctionRepository.findById(auctionIndex)
+                    .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));
+
+            String accessToken = tokenProvider.getAccessToken();
+
+            String title = auction.getProductName();
+            String description = auction.getProductDescription();
+            String scheduledTime = auction.getStartingLocalDateTime().toString(); // ISO 8601
+
+            LiveBroadcast broadcast = googleYoutubeService.insertBroadcastAndBindStream(
+                    title, description, scheduledTime, accessToken
+            );
+
+            LiveStationChannel channel = auction.getLiveStationChannel();
+            if (channel != null) {
+                channel.setYoutubeWatchUrl("https://www.youtube.com/watch?v=" + broadcast.getId());
+                channel.setYoutubeBroadcastId(broadcast.getId());
+                channelRepository.save(channel);
+            }
+
+            return ResponseEntity.ok("방송 생성 성공");
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("방송 생성 실패: " + e.getMessage());
+        }
+    }
 }
