@@ -20,7 +20,7 @@ public class ChatHistoryController {
     private final RedisChatService redisChatService;
 
     @GetMapping("/lastMinute/{auctionIndex}")
-    public List<ChatDto> getLastMinuteChatMessages(@PathVariable Long auctionIndex) {
+    public List<ChatDto> getLastMinuteChatMessages(@PathVariable("auctionIndex") Long auctionIndex) {
         log.info("getLastMinuteChatMessages 호출 - auctionIndex: {}", auctionIndex);
 
         // Redis에서 1분 내 채팅 메시지 리스트 가져오기

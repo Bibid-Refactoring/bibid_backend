@@ -17,20 +17,20 @@ public class BidRestController {
     private final RedisBidService redisBidService;
 
     @PostMapping("/{auctionIndex}")
-    public ResponseEntity<String> placeBid(@PathVariable Long auctionIndex, @RequestParam double bidAmount, @RequestParam String userId) {
+    public ResponseEntity<String> placeBid(@PathVariable("auctionIndex") Long auctionIndex, @RequestParam double bidAmount, @RequestParam String userId) {
         log.info("Received bid request - auction: {}, user: {}, amount: {}", auctionIndex, userId, bidAmount);
         redisBidService.placeBid(auctionIndex, bidAmount, userId);
         return ResponseEntity.ok("Bid placed successfully.");
     }
 
     @GetMapping("/{auctionIndex}/highest")
-    public ResponseEntity<Double> getHighestBid(@PathVariable Long auctionIndex) {
+    public ResponseEntity<Double> getHighestBid(@PathVariable("auctionIndex") Long auctionIndex) {
         log.info("Fetching highest bid for auction {}", auctionIndex);
         return ResponseEntity.ok(redisBidService.getHighestBid(auctionIndex));
     }
 
     @GetMapping("/{auctionIndex}/all")
-    public ResponseEntity<Set<String>> getAllBids(@PathVariable Long auctionIndex) {
+    public ResponseEntity<Set<String>> getAllBids(@PathVariable("auctionIndex") Long auctionIndex) {
         log.info("Fetching all bids for auction {}", auctionIndex);
         return ResponseEntity.ok(redisBidService.getAllBids(auctionIndex));
     }

@@ -101,7 +101,7 @@ public class MypageController {
     }
 
     @GetMapping("/{nickname}")
-    public ResponseEntity<?> getMemberByNickname(@PathVariable String nickname) {
+    public ResponseEntity<?> getMemberByNickname(@PathVariable("nickname") String nickname) {
         ResponseDto<MemberDto> responseDto = new ResponseDto<>();
 
         try {
@@ -225,7 +225,7 @@ public class MypageController {
     }
 
     @DeleteMapping("/my-auctions/{auctionIndex}")
-    public ResponseEntity<?> deleteMyAuction(@PathVariable Long auctionIndex,
+    public ResponseEntity<?> deleteMyAuction(@PathVariable("auctionIndex") Long auctionIndex,
                                              @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         ResponseDto<AuctionDto> responseDto = new ResponseDto<>();
 
@@ -246,7 +246,7 @@ public class MypageController {
     }
 
     @PatchMapping("/updateProfile/{memberIndex}")
-    public ResponseEntity<?> updateProfile(@PathVariable Long memberIndex,
+    public ResponseEntity<?> updateProfile(@PathVariable("memberIndex") Long memberIndex,
                                            @RequestBody MemberDto memberDto) {
         ResponseDto<MemberDto> responseDto = new ResponseDto<>();
 
