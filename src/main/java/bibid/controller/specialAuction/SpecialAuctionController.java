@@ -73,7 +73,7 @@ public class SpecialAuctionController {
 
     // ✅ 라이브 방송 종료
     @PostMapping("/endLive/{auctionIndex}")
-    public ResponseEntity<?> endLive(@PathVariable Long auctionIndex) {
+    public ResponseEntity<?> endLive(@PathVariable("auctionIndex") Long auctionIndex) {
         Auction auction = specialAuctionRepository.findById(auctionIndex)
                 .orElseThrow(() -> new RuntimeException("해당 옥션은 없습니다."));
 
@@ -97,7 +97,7 @@ public class SpecialAuctionController {
 
     // ✅ 라이브 방송 시작
     @PostMapping("/startLive/{auctionIndex}")
-    public ResponseEntity<?> startLive(@PathVariable Long auctionIndex) {
+    public ResponseEntity<?> startLive(@PathVariable("auctionIndex") Long auctionIndex) {
         Auction auction = specialAuctionRepository.findById(auctionIndex)
                 .orElseThrow(() -> new RuntimeException("해당 옥션은 없습니다."));
 
@@ -121,7 +121,7 @@ public class SpecialAuctionController {
 
     // 채널 정보 요청
     @GetMapping("/channelInfo/{auctionIndex}")
-    public ResponseEntity<LiveStationChannelDTO> getChannelInfo(@PathVariable Long auctionIndex) {
+    public ResponseEntity<LiveStationChannelDTO> getChannelInfo(@PathVariable("auctionIndex") Long auctionIndex) {
 
         Auction auction = specialAuctionRepository.findById(auctionIndex)
                 .orElseThrow(() -> new RuntimeException("해당 경매를 찾을 수 없습니다."));
@@ -142,7 +142,7 @@ public class SpecialAuctionController {
 
     @PostMapping("/registerAlarm/{auctionIndex}")
     public ResponseEntity<ResponseDto<String>> registerAuctionAlarm(
-            @PathVariable Long auctionIndex,
+            @PathVariable("auctionIndex") Long auctionIndex,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         ResponseDto<String> responseDto = new ResponseDto<>();
@@ -174,7 +174,7 @@ public class SpecialAuctionController {
 
     // ✅ 라이브 방송 생성
     @PostMapping("/createLive/{auctionIndex}")
-    public ResponseEntity<?> createLive(@PathVariable Long auctionIndex) {
+    public ResponseEntity<?> createLive(@PathVariable("auctionIndex") Long auctionIndex) {
         try {
             Auction auction = specialAuctionRepository.findById(auctionIndex)
                     .orElseThrow(() -> new RuntimeException("경매를 찾을 수 없습니다."));

@@ -98,7 +98,7 @@ public class AuctionController {
     }
 
     @GetMapping("/best/{category}") // 카테고리별 상품을 viewcnt 높은 순으로 호출
-    public ResponseEntity<?> getAuctionsByCategory(@PathVariable String category,
+    public ResponseEntity<?> getAuctionsByCategory(@PathVariable("category") String category,
                                                    @PageableDefault(page = 0, size = 5) Pageable pageable) {
         ResponseDto<AuctionDto> responseDto = new ResponseDto<>();
 
@@ -117,7 +117,7 @@ public class AuctionController {
     }
 
     @GetMapping("/category/{category}") // 카테고리별 상품 호출을 위한 엔드포인트 수정
-    public ResponseEntity<?> getAuctionsByCategory2(@PathVariable String category,
+    public ResponseEntity<?> getAuctionsByCategory2(@PathVariable("category") String category,
                                                     @PageableDefault( page = 0, size = 5) Pageable pageable) {
         ResponseDto<AuctionDto> responseDto = new ResponseDto<>();
 
