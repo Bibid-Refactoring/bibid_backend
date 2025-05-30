@@ -7,8 +7,8 @@ import bibid.repository.account.AccountUseHistoryRepository;
 import bibid.repository.auction.AuctionRepository;
 import bibid.service.notification.NotificationService;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.Comparator;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class SpecialAuctionScheduler {
 
@@ -31,9 +30,23 @@ public class SpecialAuctionScheduler {
     private final NotificationService notificationService;
     private final AccountRepository accountRepository;
     private final AccountUseHistoryRepository accountUseHistoryRepository;
-
-    // 사용자 알림 예약 정보를 저장
     private final Map<Long, Map<Long, ScheduledFuture<?>>> scheduledNotifications = new ConcurrentHashMap<>();
+
+    public SpecialAuctionScheduler(
+            SimpMessagingTemplate messagingTemplate,
+            AuctionRepository auctionRepository,
+            @Qualifier("auctionTaskScheduler") TaskScheduler taskScheduler,
+            NotificationService notificationService,
+            AccountRepository accountRepository,
+            AccountUseHistoryRepository accountUseHistoryRepository
+    ) {
+        this.messagingTemplate = messagingTemplate;
+        this.auctionRepository = auctionRepository;
+        this.taskScheduler = taskScheduler;
+        this.notificationService = notificationService;
+        this.accountRepository = accountRepository;
+        this.accountUseHistoryRepository = accountUseHistoryRepository;
+    }
 
     /**
      * 경매 종료 시간에 맞춰 경매 처리 스케줄 등록
