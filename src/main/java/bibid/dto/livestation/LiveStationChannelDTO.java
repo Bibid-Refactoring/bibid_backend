@@ -30,6 +30,9 @@ public class LiveStationChannelDTO {
     // YouTube 방송 ID (transition API 호출 시 사용됨)
     private String youtubeBroadcastId;
 
+    // YouTube 스트림 ID
+    private String youtubeStreamId;
+
     public LiveStationChannel toEntity() {
         return LiveStationChannel.builder()
                 .liveStationChannelIndex(this.liveStationChannelIndex)
@@ -38,6 +41,8 @@ public class LiveStationChannelDTO {
                 .youtubeWatchUrl(this.youtubeWatchUrl)
                 .isAvailable(this.isAvailable)
                 .isAllocated(this.isAllocated)
+                .youtubeBroadcastId(this.youtubeBroadcastId)
+                .youtubeStreamId(this.youtubeStreamId)
                 .build();
     }
 }

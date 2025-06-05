@@ -1,5 +1,6 @@
 package bibid.service.specialAuction.impl;
 
+import bibid.dto.livestation.YoutubeBroadcastResult;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.*;
@@ -101,10 +102,12 @@ public class GoogleYoutubeService {
         }
     }
 
-    public LiveBroadcast insertBroadcastAndBindStream(String title, String description, String scheduledStartTime, String accessToken) throws IOException {
+    public YoutubeBroadcastResult insertBroadcastAndBindStream(
+            String title, String description, String scheduledStartTime, String accessToken) throws IOException {
+
         YouTube youtube = getYoutube(accessToken);
 
-        // 1. 라이브 방송 객체 생성
+        // 1. 방송 생성
         LiveBroadcast broadcast = new LiveBroadcast()
                 .setSnippet(new LiveBroadcastSnippet()
                         .setTitle(title)
@@ -117,11 +120,13 @@ public class GoogleYoutubeService {
                 .insert("snippet,status,contentDetails", broadcast)
                 .execute();
 
-        // 2. 스트림 객체 생성
+        // 2. 스트림 생성
         LiveStream stream = new LiveStream()
                 .setSnippet(new LiveStreamSnippet().setTitle(title + " 스트림"))
                 .setCdn(new CdnSettings()
                         .setFormat("1080p")
+                        .setResolution("1080p")
+                        .setFrameRate("30fps")
                         .setIngestionType("rtmp"))
                 .setKind("youtube#liveStream");
 
@@ -129,15 +134,14 @@ public class GoogleYoutubeService {
                 .insert("snippet,cdn", stream)
                 .execute();
 
-        // 3. 스트림을 방송에 바인딩
+        // 3. 바인딩
         youtube.liveBroadcasts()
                 .bind(insertedBroadcast.getId(), "id,snippet")
                 .setStreamId(insertedStream.getId())
                 .execute();
 
-        return insertedBroadcast;
+        return new YoutubeBroadcastResult(insertedBroadcast, insertedStream);
     }
-
 
     public YouTube getYoutube(String accessToken) {
         try {
@@ -155,6 +159,33 @@ public class GoogleYoutubeService {
             throw new RuntimeException("YouTube 초기화 실패: " + e.getMessage(), e);
         }
     }
+
+    public void deleteBroadcast(String broadcastId, String accessToken) {
+        try {
+            YouTube youtube = getYoutube(accessToken);
+
+            youtube.liveBroadcasts()
+                    .delete(broadcastId)
+                    .execute();
+
+        } catch (IOException e) {
+            throw new RuntimeException("방송 삭제 실패: " + e.getMessage(), e);
+        }
+    }
+
+    public void deleteStream(String streamId, String accessToken) {
+        try {
+            YouTube youtube = getYoutube(accessToken);
+
+            youtube.liveStreams()
+                    .delete(streamId)
+                    .execute();
+
+        } catch (IOException e) {
+            throw new RuntimeException("스트림 삭제 실패: " + e.getMessage(), e);
+        }
+    }
+
 }
 
 

@@ -11,7 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface AuctionService {
-    Page<AuctionDto> post(AuctionDto auctionDto, AuctionDetailDto auctionDetailDto, MultipartFile thumbnail, MultipartFile[] additionalImages, Member member, Pageable pageable);
+    AuctionDto post(AuctionDto auctionDto,
+                          AuctionDetailDto auctionDetailDto,
+                          MultipartFile thumbnail,
+                          MultipartFile[] additionalImages,
+                          Member member);
 
     Page<AuctionDto> findTopByViewCount(Pageable pageable);
 

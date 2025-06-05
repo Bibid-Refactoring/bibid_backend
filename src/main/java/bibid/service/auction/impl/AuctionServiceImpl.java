@@ -35,12 +35,11 @@ public class AuctionServiceImpl implements AuctionService {
     private final AuctionDetailRepository auctionDetailRepository;
 
     @Override
-    public Page<AuctionDto> post(AuctionDto auctionDto,
-                                 AuctionDetailDto auctionDetailDto,
-                                 MultipartFile thumbnail,
-                                 MultipartFile[] additionalImages,
-                                 Member member,
-                                 Pageable pageable) {
+    public AuctionDto post(AuctionDto auctionDto,
+                           AuctionDetailDto auctionDetailDto,
+                           MultipartFile thumbnail,
+                           MultipartFile[] additionalImages,
+                           Member member) {
 
         auctionDto.setRegdate(LocalDateTime.now());
         auctionDto.setModdate(LocalDateTime.now());
@@ -59,18 +58,16 @@ public class AuctionServiceImpl implements AuctionService {
             auction.setChatRoom(chatRoom);
         }
 
-        // 썸네일 등록
         if (thumbnail != null) {
             AuctionImageDto auctionImageDto = fileUtils.auctionImageParserFileInfo(thumbnail, "auction/thumbnail");
             auctionImageDto.setThumbnail(true);
             auction.getAuctionImageList().add(auctionImageDto.toEntity(auction));
         }
 
-        // 추가 이미지 등록
         if (additionalImages != null) {
             Arrays.stream(additionalImages).forEach(additionalImage -> {
                 if (additionalImage.getOriginalFilename() != null &&
-                        !additionalImage.getOriginalFilename().equalsIgnoreCase("")) {
+                        !additionalImage.getOriginalFilename().isBlank()) {
 
                     AuctionImageDto auctionImageDto = fileUtils.auctionImageParserFileInfo(additionalImage, "auction/additionalImages");
                     auctionImageDto.setThumbnail(false);
@@ -81,13 +78,13 @@ public class AuctionServiceImpl implements AuctionService {
 
         Auction savedAuction = auctionRepository.save(auction);
 
-        // ✅ 스케줄링은 경매 종료만 예약
         if (auctionDto.getAuctionType().equals("실시간 경매")) {
             specialAuctionScheduler.scheduleAuctionEnd(savedAuction.getAuctionIndex(), auctionDto.getEndingLocalDateTime());
         }
 
-        return auctionRepository.findAll(pageable).map(Auction::toDto);
+        return savedAuction.toDto(); // ✅ 전체 목록이 아니라 방금 저장한 객체를 DTO로 변환
     }
+
 
 
     @Override
@@ -95,6 +92,7 @@ public class AuctionServiceImpl implements AuctionService {
         Pageable sortedByRegdate = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by("regdate").descending());
         return auctionRepository.findAllGeneralAuction(sortedByRegdate).map(Auction::toDto);
     }
+
 
     @Override
     public Page<AuctionDto> findTopByViewCount(Pageable pageable) {

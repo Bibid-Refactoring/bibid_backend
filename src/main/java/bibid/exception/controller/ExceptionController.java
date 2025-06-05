@@ -6,6 +6,7 @@ import bibid.exception.errorCode.MakeSignatureException;
 import bibid.exception.errorCode.ObjectStorageException;
 import bibid.exception.response.ErrorResponse;
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +18,7 @@ import java.net.URISyntaxException;
 import java.util.NoSuchElementException;
 import java.util.zip.DataFormatException;
 
+@Slf4j
 @RestControllerAdvice
 public class ExceptionController {
 
@@ -88,10 +90,9 @@ public class ExceptionController {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> exceptionHandler(Exception e) {
-        System.out.println("에러났음 : "+  e);
-        ErrorResponse response = new ErrorResponse(ErrorCode.EXCEPTION);
-        return setResponse(response, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> handleAllExceptions(Exception ex) {
+        log.error("Unhandled Exception: {}, message: {}", ex.getClass().getSimpleName(), ex.getMessage(), ex);
+        return ResponseEntity.badRequest().body("");
     }
 
 
