@@ -51,7 +51,9 @@ public class SecurityConfiguration {
                             "/api/ncloud/**",
                             "/mypage/**",
                             "/auth/**",
+                            "/specialAuction/**",
                             "/specialAuction/list",
+                            "/specialAuction/createLive",
                             "/auctionDetail/**",
                             "/ws-auctions/**",
                             "/ws-notifications/**"

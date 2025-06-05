@@ -34,22 +34,23 @@ public class AuctionController {
                                   @RequestPart("auctionDetailDto") AuctionDetailDto auctionDetailDto,
                                   @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail,
                                   @RequestPart(value = "additionalImages", required = false) MultipartFile[] additionalImages,
-                                  @AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                  @PageableDefault(page = 0, size = 5) Pageable pageable
+                                  @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         ResponseDto<AuctionDto> responseDto = new ResponseDto<>();
 
         try {
             log.info("post auctionDto: {}", auctionDto);
-            Page<AuctionDto> auctionDtoList = auctionService.post(auctionDto, auctionDetailDto, thumbnail, additionalImages, customUserDetails.getMember(), pageable);
 
-            log.info("post auctionDto: {}", auctionDtoList);
-            responseDto.setPageItems(auctionDtoList);
+            AuctionDto savedAuctionDto = auctionService.post(
+                    auctionDto, auctionDetailDto, thumbnail, additionalImages, customUserDetails.getMember());
+
+            responseDto.setItem(savedAuctionDto); // ✅ 단일 항목으로 변경
             responseDto.setStatusCode(HttpStatus.CREATED.value());
             responseDto.setStatusMessage("created");
 
             return ResponseEntity.created(new URI("/auction")).body(responseDto);
-        } catch(Exception e ) {
+
+        } catch (Exception e) {
             log.error("post error: {}", e.getMessage());
             responseDto.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
             responseDto.setStatusMessage(e.getMessage());

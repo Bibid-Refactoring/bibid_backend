@@ -33,7 +33,7 @@ public class GoogleServiceImpl {
     private final JwtProvider jwtProvider;
     private final UserDetailsService userDetailsService;
 
-    // ㅁ [1번] 코드로 카카오에서 토큰 받기
+    // ㅁ [1번] 코드로 구글에서 토큰 받기
     public String saveUserAndGetToken(String accessToken) {
         String url = "https://www.googleapis.com/oauth2/v3/userinfo";
 
@@ -64,36 +64,33 @@ public class GoogleServiceImpl {
     }
 
     public Member saveOrUpdateMember(GoogleProfileDto googleProfileDto) {
-        Member googleMember = null;
+        Member existing = memberRepository.findByEmail(googleProfileDto.getEmail());
 
-        googleMember = memberRepository.findByEmail(googleProfileDto.getEmail());
-
-        if (googleMember == null) {
-            googleMember = Member.builder()
-                    .memberId(googleProfileDto.getName())
-                    .email(googleProfileDto.getEmail())
-                    .name(googleProfileDto.getFamily_name())
-                    .nickname(googleProfileDto.getName())
-                    .role("ROLE_USER")
-                    .oauthType("Google")
-                    .build();
-
-            // SellerInfo와 Account를 생성하여 Member에 설정
-            SellerInfo sellerInfo = SellerInfo.builder()
-                    .member(googleMember)
-                    .build();
-            googleMember.setSellerInfo(sellerInfo);
-
-            Account account = Account.builder()
-                    .member(googleMember)
-                    .userMoney("1000000")
-                    .build();
-            googleMember.setAccount(account);
-
-            memberRepository.save(googleMember);
+        // ✅ 기존 회원이 존재할 경우
+        if (existing != null) {
+            if (!"Google".equalsIgnoreCase(existing.getOauthType())) {
+                // ❌ 로컬 가입자인데 구글 로그인 시도 → 차단 or 연동 안내
+                throw new IllegalStateException("이메일이 이미 일반 가입 계정으로 등록되어 있습니다.");
+            }
+            // ✅ 기존 Google 계정이면 그대로 로그인
+            return existing;
         }
 
-        return googleMember;
+        // ✅ 신규 회원 생성
+        Member googleMember = Member.builder()
+                .memberId(googleProfileDto.getName())
+                .email(googleProfileDto.getEmail())
+                .name(googleProfileDto.getFamily_name())
+                .nickname(googleProfileDto.getName())
+                .role("ROLE_USER")
+                .oauthType("Google")
+                .build();
+
+        // Account, SellerInfo 연동
+        googleMember.setAccount(Account.builder().member(googleMember).userMoney("1000000").build());
+        googleMember.setSellerInfo(SellerInfo.builder().member(googleMember).build());
+
+        return memberRepository.save(googleMember);
     }
 
     public Map<String, String> getMember(String jwtTokenValue) {

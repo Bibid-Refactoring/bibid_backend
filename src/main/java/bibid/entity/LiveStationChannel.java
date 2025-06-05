@@ -63,11 +63,16 @@ public class LiveStationChannel {
     @Column
     private String youtubeBroadcastId;
 
+    /**
+     * YouTube 스트림 ID
+     */
+    @Column
+    private String youtubeStreamId;
 
     /**
      * DTO 변환 메서드
      */
-    public LiveStationChannelDTO toDto(){
+    public LiveStationChannelDTO toDto() {
         return LiveStationChannelDTO.builder()
                 .liveStationChannelIndex(this.liveStationChannelIndex)
                 .youtubeStreamUrl(this.youtubeStreamUrl)
@@ -76,6 +81,7 @@ public class LiveStationChannel {
                 .isAllocated(this.isAllocated)
                 .isAvailable(this.isAvailable)
                 .youtubeBroadcastId(this.youtubeBroadcastId)
+                .youtubeStreamId(this.youtubeStreamId)
                 .build();
     }
 }
