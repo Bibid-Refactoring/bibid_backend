@@ -56,7 +56,8 @@ public class SecurityConfiguration {
                             "/specialAuction/createLive",
                             "/auctionDetail/**",
                             "/ws-auctions/**",
-                            "/ws-notifications/**"
+                            "/ws-notifications/**",
+                            "/api/banners/**"
                     ).permitAll();
                     authorizationManagerRequestMatcherRegistry.anyRequest().authenticated();
                 })
