@@ -1,5 +1,6 @@
 package bibid.oauth2;
 
+import bibid.dto.MemberDto;
 import bibid.dto.ResponseDto;
 import bibid.jwt.JwtProvider;
 import bibid.service.member.MemberServiceImpl;
@@ -119,23 +120,18 @@ public class OauthController {
 
         String jwtToken = googleServiceImpl.saveUserAndGetToken(accessToken);
 
-        // 프론트에 넘겨 줄 회원정보 조회
-        ResponseDto<Map<String, String>> responseDto = new ResponseDto<>();
-        Map<String, String> memberInfo = googleServiceImpl.getMember(jwtToken);
+        ResponseDto<MemberDto> responseDto = new ResponseDto<>();
+        MemberDto memberInfo = googleServiceImpl.getMember(jwtToken);
 
         try {
-
-            // 쿠키 설정
             StringBuilder cookieHeader = new StringBuilder("ACCESS_TOKEN=" + jwtToken + "; Path=/; HttpOnly; ");
-
-
             cookieHeader.append("Secure; SameSite=None");
 
             response.addHeader("Set-Cookie", cookieHeader.toString());
 
             responseDto.setStatusCode(HttpStatus.OK.value());
             responseDto.setStatusMessage("Access token received successfully.");
-            responseDto.setItem(memberInfo); // 사용자 정보를 응답 DTO에 추가
+            responseDto.setItem(memberInfo);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

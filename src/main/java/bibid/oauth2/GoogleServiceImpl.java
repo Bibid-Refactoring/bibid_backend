@@ -1,5 +1,6 @@
 package bibid.oauth2;
 
+import bibid.dto.MemberDto;
 import bibid.dto.ResponseDto;
 import bibid.entity.Account;
 import bibid.entity.CustomUserDetails;
@@ -93,41 +94,26 @@ public class GoogleServiceImpl {
         return memberRepository.save(googleMember);
     }
 
-    public Map<String, String> getMember(String jwtTokenValue) {
-
-        Map<String, String> item = new HashMap<>();
-
+    public MemberDto getMember(String jwtTokenValue) {
         try {
-            // JWT에서 memberId를 추출
+            // JWT에서 memberId 추출
             String memberId = jwtProvider.validateAndGetSubject(jwtTokenValue);
 
             // Member 조회
             Optional<Member> optionalMember = memberRepository.findByMemberId(memberId);
 
-            // Optional<Member>에서 Member 객체 가져오기
             if (optionalMember.isPresent()) {
-                Member member = optionalMember.get(); // Member 객체
+                Member member = optionalMember.get();
 
-                // 회원 정보를 item에 추가
-                item.put("memberIndex", String.valueOf(member.getMemberIndex())); // Assuming getId() returns the member's index
-                item.put("type", member.getOauthType());
-                item.put("addressDetail", "***"); // 실제 주소 세부정보로 변경 필요
-                item.put("email", member.getEmail());
-                item.put("memberAddress", "***"); // 실제 주소로 변경 필요
-                item.put("memberId", member.getMemberId());
-                item.put("nickname", member.getNickname());
-                item.put("name", member.getName());
-                item.put("memberPnum", "***");
+                // 비밀번호 필드는 toDto()에서 포함되지 않으므로 안전
+                return member.toDto();
 
-                return item;
             } else {
                 throw new RuntimeException("회원 정보를 찾을 수 없습니다.");
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("토큰에서 회원 정보를 추출하는 데 실패했습니다.", e);
         }
-
-
     }
 }
 
