@@ -29,6 +29,7 @@ public class Member {
     private Long memberIndex;
 
     private String name;
+    @Builder.Default
     private String oauthType = "Normal";
 
     @Column(unique = true)
