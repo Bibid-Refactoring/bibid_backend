@@ -81,7 +81,7 @@ public class AuctionController {
     }
 
     @GetMapping("/top") //베스트 상품 6개 호출
-    public ResponseEntity<?> getTopAuctions(@PageableDefault(page = 0, size = 6) Pageable pageable) {
+    public ResponseEntity<?> getTopAuctions(@PageableDefault(page = 0, size = 8) Pageable pageable) {
         ResponseDto<AuctionDto> responseDto = new ResponseDto<>();
 
         try {

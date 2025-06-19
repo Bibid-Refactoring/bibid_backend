@@ -88,6 +88,13 @@ public class Banner {
     @Column(name = "update_time")
     private Timestamp updateTime;
 
+    @PrePersist
+    protected void onCreate() {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        this.createTime = now;
+        this.updateTime = now;
+    }
+    
     @PreUpdate
     public void preUpdate() {
         this.updateTime = new Timestamp(System.currentTimeMillis());
