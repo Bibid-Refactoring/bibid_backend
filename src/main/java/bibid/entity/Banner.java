@@ -60,6 +60,7 @@ public class Banner {
      */
     @Min(value = 0, message = "displayOrder는 0 이상의 숫자여야 합니다.")
     @Column(name = "display_order", nullable = false)
+    @Builder.Default
     private Integer displayOrder = 0;
 
     /**
