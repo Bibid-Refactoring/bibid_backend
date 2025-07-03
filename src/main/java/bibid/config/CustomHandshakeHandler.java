@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 import org.springframework.web.util.WebUtils;
@@ -55,6 +53,7 @@ public class CustomHandshakeHandler extends DefaultHandshakeHandler {
         }
 
         // 2단계: 타입 확인 후 다운캐스팅
+        // instanceof A a: 객체가 A 타입인지 검사하면서 동시에 변수 a로 자동 다운캐스팅까지 해주는 Java의 패턴 매칭 기능
         if (!(request instanceof ServletServerHttpRequest servletRequestWrapper)) {
             log.warn("determineUser: not a ServletServerHttpRequest");
             return super.determineUser(request, wsHandler, attributes);
