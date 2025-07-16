@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+// 애플리케이션 시작 시 YouTube 채널 정보가 비어 있다면 기본 채널을 하나 생성
 @Component
 @RequiredArgsConstructor
 public class YoutubeChannelInitializer implements CommandLineRunner {
