@@ -17,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 @Configuration
 // Spring Security 보안 기능 활성화
@@ -77,13 +78,23 @@ public class SecurityConfiguration {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://bibid.shop", "http://localhost:3000"));  // 허용할 도메인
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // 허용할 HTTP 메서드
-        configuration.setAllowedHeaders(Arrays.asList("*")); // 허용할 헤더
-        configuration.setAllowCredentials(true); // 쿠키 및 인증 정보를 포함한 요청 허용
 
+        // 허용할 도메인
+        configuration.setAllowedOrigins(Arrays.asList("https://bibid.shop", "http://localhost:3000"));
+
+        // 허용할 HTTP 메서드
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        // 허용할 헤더
+        configuration.setAllowedHeaders(Collections.singletonList("*"));
+
+        // 쿠키 및 인증 정보를 포함한 요청 허용
+        configuration.setAllowCredentials(true);
+
+        // 모든 경로에 위 설정을 적용
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);  // 모든 경로에 CORS 설정 적용
+        source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }

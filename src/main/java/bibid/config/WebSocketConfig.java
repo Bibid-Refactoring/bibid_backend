@@ -1,6 +1,7 @@
 package bibid.config;
 
 import bibid.jwt.JwtProvider;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -43,7 +44,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
      * SockJS fallback 지원
      */
     @Override
-    public void registerStompEndpoints(StompEndpointRegistry registry) {
+    public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         // 공통 등록 메서드로 중복 제거
         registerEndpoint(registry, "/ws-auctions");
         registerEndpoint(registry, "/ws-notifications");
