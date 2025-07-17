@@ -16,6 +16,7 @@ import java.net.URI;
 @Getter
 public class S3ClientConfig {
 
+    // properties에서 S3 관련 설정값 주입
     @Value("${cloud.aws.credentials.access-key}")
     private String accessKey;
 
@@ -37,10 +38,10 @@ public class S3ClientConfig {
                                 AwsBasicCredentials.create(accessKey, secretKey)
                         )
                 )
-                .region(Region.of(region))  // us-east-1 or ap-northeast-2 등 형식만 맞추면 됨
+                .region(Region.of(region))  // us-east-1 or ap-northeast-2 등
                 .serviceConfiguration(
                         S3Configuration.builder()
-                                .pathStyleAccessEnabled(true)  // Cloudflare R2는 필수!
+                                .pathStyleAccessEnabled(true)  // R2 사용 시 필수 설정
                                 .build()
                 )
                 .build();
